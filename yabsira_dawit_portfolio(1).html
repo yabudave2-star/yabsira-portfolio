@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yabsira Dawit (@suvolix) | Certified Security Tester & Portfolio</title>
+    <meta name="description" content="Portfolio of Yabsira Dawit (@suvolix) - Certified Security Tester (GTSTV2), CTF Player, OSINT & Penetration Testing Specialist.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter, JetBrains Mono & Fira Code -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        hacker: {
+                            bg: '#050806',
+                            card: '#09100c',
+                            border: '#132a1c',
+                            neon: '#00ff41',
+                            cyan: '#00f0ff',
+                            amber: '#ffb000'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #050806;
+            color: #d1fae5;
+            overflow-x: hidden;
+        }
+
+        /* Subtle CRT Scanline Overlay */
+        .crt-scanlines {
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.28) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.02),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.02)
+            );
+            background-size: 100% 3px, 6px 100%;
+            pointer-events: none;
+        }
+
+        /* Cyber Grid Background Overlay */
+        .cyber-grid {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(0, 255, 65, 0.035) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 240, 255, 0.035) 1px, transparent 1px);
+        }
+
+        /* Glowing Terminal Cards */
+        .terminal-card {
+            background: rgba(9, 16, 12, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(0, 255, 65, 0.18);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.03);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .terminal-card:hover {
+            border-color: rgba(0, 255, 65, 0.55);
+            box-shadow: 0 8px 30px -5px rgba(0, 255, 65, 0.14), inset 0 0 12px rgba(0, 255, 65, 0.04);
+            transform: translateY(-2px);
+        }
+
+        .terminal-card-cyan:hover {
+            border-color: rgba(0, 240, 255, 0.55);
+            box-shadow: 0 8px 30px -5px rgba(0, 240, 255, 0.14), inset 0 0 12px rgba(0, 240, 255, 0.04);
+        }
+
+        .neon-text-glow {
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.45);
+        }
+
+        .cyan-text-glow {
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.45);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050806;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #133820;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00ff41;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-[#00ff41]/25 selection:text-[#00ff41] relative min-h-screen">
+
+    <!-- 1. BACKGROUND CANVAS (Digital Hex/Binary Rain + Cyber Nodes) -->
+    <canvas id="hacker-canvas" class="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-45"></canvas>
+    
+    <!-- Subtle Grid & CRT Scanlines Overlay -->
+    <div class="fixed inset-0 cyber-grid pointer-events-none z-0"></div>
+    <div id="crt-overlay" class="fixed inset-0 crt-scanlines pointer-events-none z-30 opacity-75"></div>
+
+    <!-- Toast Notification for Clipboard Copy -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 hidden transform transition-all duration-300 translate-y-2 opacity-0">
+        <div class="bg-[#09140d] border border-[#00ff41] text-[#00ff41] px-4 py-3 rounded-xl shadow-[0_0_20px_rgba(0,255,65,0.25)] flex items-center gap-3 font-mono text-xs sm:text-sm">
+            <i class="fa-solid fa-terminal"></i>
+            <span id="toast-message">Copied to clipboard!</span>
+        </div>
+    </div>
+
+    <!-- Top Status Telemetry Bar -->
+    <div class="relative z-20 bg-[#030604]/90 border-b border-[#00ff41]/15 text-[11px] font-mono text-emerald-400/80 px-4 py-1.5">
+        <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-4">
+                <span class="flex items-center gap-1.5 text-[#00ff41]">
+                    <span class="w-2 h-2 rounded-full bg-[#00ff41] animate-ping"></span>
+                    STATUS: ONLINE
+                </span>
+                <span class="hidden sm:inline text-emerald-500/60">|</span>
+                <span class="hidden sm:inline">ENCRYPTION: <strong class="text-[#00f0ff]">AES-256-GCM</strong></span>
+                <span class="hidden md:inline text-emerald-500/60">|</span>
+                <span class="hidden md:inline">LOC: <strong class="text-emerald-300">ETH</strong></span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-emerald-400/70">CERT_ID: <strong class="text-[#00ff41]">GTSTV2R14AA1194</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Sticky Navigation -->
+    <header class="sticky top-0 z-40 backdrop-blur-md bg-[#050806]/85 border-b border-[#00ff41]/20">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2">
+            <a href="#" class="flex items-center gap-2 font-mono font-bold text-white tracking-tight text-sm sm:text-base group">
+                <span class="text-[#00ff41] group-hover:translate-x-0.5 transition-transform">&gt;_</span>
+                <span>yabsira<span class="text-[#00ff41] neon-text-glow">@suvolix</span><span class="text-[#00f0ff]">:~#</span></span>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-6 text-xs font-mono uppercase tracking-wider text-emerald-200/80">
+                <a href="#skills" class="hover:text-[#00ff41] transition-colors">[01.Task_Skills]</a>
+                <a href="#certification" class="hover:text-[#00ff41] transition-colors">[02.GTST_Cert]</a>
+                <a href="#work" class="hover:text-[#00ff41] transition-colors">[03.Tools_&_CTF]</a>
+                <a href="#contact" class="hover:text-[#00ff41] transition-colors">[04.Comms]</a>
+            </nav>
+
+            <!-- Interactive Background FX Controls + Social Quick Links -->
+            <div class="flex items-center gap-2">
+                <button id="fx-toggle-btn" onclick="cycleBgMode()" 
+                        class="text-xs font-mono bg-[#0a160e] hover:bg-[#112618] text-[#00ff41] px-3 py-2 rounded-lg border border-[#00ff41]/30 transition-all flex items-center gap-1.5"
+                        title="Toggle Matrix Background Intensity / Pause">
+                    <i id="fx-icon" class="fa-solid fa-eye text-xs"></i>
+                    <span id="fx-label" class="hidden sm:inline">FX: MED</span>
+                </button>
+
+                <a href="https://t.me/suvolix" target="_blank" rel="noopener noreferrer" 
+                   class="text-xs font-mono bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 text-[#00f0ff] px-3 py-2 rounded-lg border border-[#00f0ff]/40 transition-all flex items-center gap-1.5">
+                    <i class="fa-brands fa-telegram"></i>
+                    <span class="hidden sm:inline">@suvolix</span>
+                </a>
+
+                <a href="https://instagram.com/yabu_dave1" target="_blank" rel="noopener noreferrer" 
+                   class="text-xs font-mono bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 px-3 py-2 rounded-lg border border-pink-500/40 transition-all flex items-center gap-1.5"
+                   title="Instagram @yabu_dave1">
+                    <i class="fa-brands fa-instagram"></i>
+                    <span class="hidden sm:inline">@yabu_dave1</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-14 space-y-20">
+
+        <!-- 1. HERO SECTION (SIMPLE & TASK-FOCUSED) -->
+        <section class="terminal-card rounded-2xl p-6 sm:p-10 border border-[#00ff41]/35 shadow-[0_0_35px_rgba(0,255,65,0.08)] relative overflow-hidden">
+            <div class="space-y-6 max-w-3xl">
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#00ff41]/10 border border-[#00ff41]/40 text-[#00ff41] font-mono text-xs">
+                        <i class="fa-solid fa-user-shield"></i>
+                        <span>VERIFIED SECURITY TESTER // GTSTV2</span>
+                    </div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#00f0ff]/10 border border-[#00f0ff]/35 text-[#00f0ff] font-mono text-xs">
+                        <i class="fa-solid fa-terminal"></i>
+                        <span>TASK-FOCUSED OPERATOR</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="font-mono text-xs text-[#00f0ff] tracking-widest uppercase">
+                        TG: @suvolix &bull; IG: @yabu_dave1 &bull; CERT ID: GTSTV2R14AA1194
+                    </div>
+                    <h1 class="text-3xl sm:text-5xl font-bold text-white tracking-tight font-mono">
+                        Yabsira Dawit
+                    </h1>
+                    <p class="text-base sm:text-xl text-[#00ff41] font-mono font-medium neon-text-glow">
+                        Certified Security Tester | Tool Builder | CTF &amp; OSINT
+                    </p>
+                </div>
+
+                <p class="text-emerald-100/85 leading-relaxed text-sm sm:text-base">
+                    Hands-on security tester focused on practical execution: <strong class="text-white">Network Port Scanning &amp; Host Discovery</strong>, <strong class="text-white">Web Application Pentesting</strong>, <strong class="text-white">OSINT Reconnaissance</strong>, and <strong class="text-white">CTF Exploitation Write-Ups</strong>. I build custom Python and Bash recon tools and document clear, reproducible security findings.
+                </p>
+
+                <!-- Quick Skill Highlights Pill Bar -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1 font-mono text-xs">
+                    <div class="bg-[#050a07]/90 border border-[#00ff41]/25 rounded-xl px-3.5 py-2.5 flex items-center gap-2 text-emerald-200">
+                        <i class="fa-solid fa-network-wired text-[#00ff41]"></i>
+                        <span>Port Scanning &amp; NSE</span>
+                    </div>
+                    <div class="bg-[#050a07]/90 border border-[#00f0ff]/25 rounded-xl px-3.5 py-2.5 flex items-center gap-2 text-emerald-200">
+                        <i class="fa-solid fa-bug-slash text-[#00f0ff]"></i>
+                        <span>Web App Pentesting</span>
+                    </div>
+                    <div class="bg-[#050a07]/90 border border-[#00ff41]/25 rounded-xl px-3.5 py-2.5 flex items-center gap-2 text-emerald-200">
+                        <i class="fa-solid fa-magnifying-glass-location text-[#00ff41]"></i>
+                        <span>OSINT &amp; Recon</span>
+                    </div>
+                    <div class="bg-[#050a07]/90 border border-[#00f0ff]/25 rounded-xl px-3.5 py-2.5 flex items-center gap-2 text-emerald-200">
+                        <i class="fa-brands fa-python text-[#00f0ff]"></i>
+                        <span>Python &amp; Bash Tools</span>
+                    </div>
+                    <div class="bg-[#050a07]/90 border border-[#00ff41]/25 rounded-xl px-3.5 py-2.5 flex items-center gap-2 text-emerald-200">
+                        <i class="fa-solid fa-flag-checkered text-[#00ff41]"></i>
+                        <span>CTF Exploitation</span>
+                    </div>
+                    <div class="bg-[#050a07]/90 border border-[#00f0ff]/25 rounded-xl px-3.5 py-2.5 flex items-center gap-2 text-emerald-200">
+                        <i class="fa-solid fa-shield-halved text-[#00f0ff]"></i>
+                        <span>Vuln Assessment</span>
+                    </div>
+                </div>
+
+                <!-- Primary CTA Buttons -->
+                <div class="flex flex-wrap items-center gap-3 pt-2 font-mono">
+                    <a href="https://github.com/yabudave2-star/port-scanner" target="_blank" rel="noopener noreferrer"
+                       class="bg-[#00ff41] hover:bg-[#22ff5b] text-[#040a06] font-bold px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 text-xs sm:text-sm shadow-[0_0_20px_rgba(0,255,65,0.3)]">
+                        <i class="fa-solid fa-radar"></i>
+                        <span>./port-scanner</span>
+                    </a>
+
+                    <a href="https://github.com/yabudave2-star/CTF-write-up" target="_blank" rel="noopener noreferrer"
+                       class="bg-[#0b1810] hover:bg-[#13291b] text-[#00ff41] font-semibold px-4 py-2.5 rounded-xl border border-[#00ff41]/40 transition-all flex items-center gap-2 text-xs sm:text-sm">
+                        <i class="fa-brands fa-github text-base"></i>
+                        <span>./CTF-write-up</span>
+                    </a>
+
+                    <a href="https://ye-buna.com/yabdave" target="_blank" rel="noopener noreferrer"
+                       class="bg-[#0b1810] hover:bg-[#13291b] text-[#ffb000] font-semibold px-4 py-2.5 rounded-xl border border-[#ffb000]/40 transition-all flex items-center gap-2 text-xs sm:text-sm">
+                        <i class="fa-solid fa-mug-hot"></i>
+                        <span>Ye-Buna Store</span>
+                    </a>
+
+                    <a href="#certification"
+                       class="bg-[#0b1810] hover:bg-[#13291b] text-[#00f0ff] font-medium px-4 py-2.5 rounded-xl border border-[#00f0ff]/35 transition-all flex items-center gap-2 text-xs sm:text-sm">
+                        <i class="fa-solid fa-certificate"></i>
+                        <span>GTSTV2 Certificate</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. PRACTICAL TASK SKILLS SECTION (MAIN PORTFOLIO FOCUS) -->
+        <section id="skills" class="space-y-8 scroll-mt-20">
+            <div class="border-b border-[#00ff41]/20 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+                <div>
+                    <span class="font-mono text-xs text-[#00ff41] uppercase tracking-widest">01 // CORE_TASK_FOCUS</span>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white font-mono mt-1">What I Do (Task Skills)</h2>
+                </div>
+                <p class="text-xs font-mono text-[#00f0ff]">Simple &bull; Practical &bull; Hands-On Execution</p>
+            </div>
+
+            <!-- 4 Core Task Skill Pillars -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Task Pillar 1: Network Recon & Custom Port Scanning Tools -->
+                <div class="terminal-card rounded-2xl p-6 flex flex-col justify-between space-y-5">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="w-11 h-11 rounded-xl bg-[#00ff41]/10 border border-[#00ff41]/30 flex items-center justify-center text-[#00ff41]">
+                                <i class="fa-solid fa-network-wired text-lg"></i>
+                            </div>
+                            <span class="font-mono text-[11px] text-[#00ff41] bg-[#00ff41]/10 px-2.5 py-1 rounded border border-[#00ff41]/25">
+                                TASK_01 // NET_RECON
+                            </span>
+                        </div>
+
+                        <h3 class="text-lg font-bold text-white font-mono">
+                            Port Scanning &amp; Host Discovery Automation
+                        </h3>
+
+                        <p class="text-sm text-emerald-100/75 leading-relaxed">
+                            Building and running custom network reconnaissance scripts in Python and Bash to discover live hosts, scan open ports (both with and without Nmap), and automate NSE vulnerability scripts.
+                        </p>
+
+                        <!-- Concrete Tasks Checklist -->
+                        <ul class="space-y-1.5 text-xs font-mono text-emerald-200/90 pt-1">
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#00ff41]"></i> Active Host Discovery (<code class="text-[#00f0ff]">host_discovery.py</code>)</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#00ff41]"></i> Python Nmap Module Port Scanner (<code class="text-[#00f0ff]">port_scanner.py</code>)</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#00ff41]"></i> Pure Socket Port Scanner Without Nmap (<code class="text-[#00f0ff]">port_scanner_no_nmap.py</code>)</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#00ff41]"></i> Automated Bash NSE Script Scanning (<code class="text-[#00f0ff]">scanner.sh</code>)</li>
+                        </ul>
+                    </div>
+
+                    <div class="pt-3 border-t border-emerald-950/80 flex flex-wrap gap-1.5">
+                        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-[#050c08] text-[#00ff41] border border-[#00ff41]/25">Python Sockets</span>
+                        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-[#050c08] text-[#00ff41] border border-[#00ff41]/25">Nmap / NSE</span>
+                        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-[#050c08] text-[#00ff41] border border-[#00ff41]/25">Bash Scripting</span>
+                        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-[#050c08] text-[#00ff41] border border-[#00ff41]/25">Host Enumeration</span>
+                    </div>
+                </div>
+
+                <!-- Task Pillar 2: Web Pentesting & Vulnerability Testing -->
+                <div class="terminal-card terminal-card-cyan rounded-2xl p-6 flex flex-col justify-between space-y-5">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="w-11 h-11 rounded-xl bg-[#00f0ff]/10 border border-[#00f0ff]/30 flex items-center justify-center text-[#00f0ff]">
+                                <i class="fa-solid fa-bug-slash text-lg"></i>
+                            </div>
+                            <span class="font-mono text-[11px] text-[#00f0ff] bg-[#00f0ff]/10 px-2.5 py-1 rounded border border-[#00f0ff]/25">
+                                TASK_02 // PENTEST
+                            </span>
+                        </div>
+
+                        <h3 class="text-lg font-bold text-white font-mono">
+                            Web Application &amp; System Security Testing
+                        </h3>
+
+                        <p class="text-sm text-emerald-100/75 leading-relaxed">
+                            Testing web applications and target machines for real-world security weaknesses, intercepting requests, validating exploits, and escalating privileges on Linux and Windows hosts.
+                        </p>
+
+                        <!-- Concrete Tasks Checklist -->
+                        <ul class="space-y-1.5 text-xs font-mono text-emerald-200/90 pt-1">
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#00f0ff]"></i> OWASP Top 10 Vulnerability Assessment</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#00f0ff]"></i> SQLi, XSS, IDOR &amp; Authentication Bypass Testing</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#00f0ff]"></i> HTTP Request Tampering with Burp Suite</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#00f0ff]"></i> Linux / Windows Local Privilege Escalation</li>
+                        </ul>
+                    </div>
+
+                    <div class="pt-3 border-t border-emerald-950/80 flex flex-wrap gap-1.5">
+                        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-[#050c08] text-[#00f0ff] border border-[#00f0ff]/25">Burp Suite</span>
+                        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-[#050c08] text-[#00f0ff] border border-[#00f0ff]/25">OWASP Top 10</span>
+                        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-[#050c08] text-[#00f0ff] border border-[#00f0ff]/25">Metasploit</span>
+                        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-[#050c08] text-[#00f0ff] border border-[#00f0ff]/25">PrivEsc</span>
+                    </div>
+                </div>
+
+                <!-- Task Pillar 3: OSINT & Reconnaissance -->
+                <div class="terminal-card rounded-2xl p-6 flex flex-col justify-between space-y-5">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="w-11 h-11 rounded-xl bg-[#00ff41]/10 border border-[#00ff41]/30 flex items-center justify-center text-[#00ff41]">
+                                <i class="fa-solid fa-magnifying-glass-location text-lg"></i>
+                            </div>
+                            <span class="font-mono text-[11px] text-[#00ff41] bg-[#00ff41]/10 px-2.5 py-1 rounded border border-[#00ff41]/25">
+                                TASK_03 // OSINT
+                            </span>
+                        </div>
+
+                        <h3 class="text-lg font-bold text-white font-mono">
+                            OSINT &amp; Target Reconnaissance
+                        </h3>
+
+                        <p class="text-sm text-emerald-100/75 leading-relaxed">
+                            Trained in Open-Source Intelligence (OSINT) investigation to uncover exposed digital footprints, trace public assets, inspect file metadata, and map out target attack surfaces before testing.
+                        </p>
+
+                        <!-- Concrete Tasks Checklist -->
+                        <ul class="space-y-1.5 text-xs font-mono text-emerald-200/90 pt-1">
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#00ff41]"></i> Passive &amp; Active Target Footprinting</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#00ff41]"></i> Subdomain, Whois &amp; Public Asset Discovery</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#00ff41]"></i> Image / Document Metadata (EXIF) Extraction</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#00ff41]"></i> Username &amp; Digital Identity Correlation</li>
+                        </ul>
+                    </div>
+
+                    <div class="pt-3 border-t border-emerald-950/80 flex flex-wrap gap-1.5">
+                        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-[#050c08] text-[#00ff41] border border-[#00ff41]/25">OSINT Recon</span>
+                        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-[#050c08] text-[#00ff41] border border-[#00ff41]/25">Footprinting</span>
+                        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-[#050c08] text-[#00ff41] border border-[#00ff41]/25">EXIF Metadata</span>
+                        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-[#050c08] text-[#00ff41] border border-[#00ff41]/25">Maltego / Recon</span>
+                    </div>
+                </div>
+
+                <!-- Task Pillar 4: CTF Problem Solving & Documentation -->
+                <div class="terminal-card terminal-card-cyan rounded-2xl p-6 flex flex-col justify-between space-y-5">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="w-11 h-11 rounded-xl bg-[#00f0ff]/10 border border-[#00f0ff]/30 flex items-center justify-center text-[#00f0ff]">
+                                <i class="fa-solid fa-flag-checkered text-lg"></i>
+                            </div>
+                            <span class="font-mono text-[11px] text-[#00f0ff] bg-[#00f0ff]/10 px-2.5 py-1 rounded border border-[#00f0ff]/25">
+                                TASK_04 // CTF_WRITEUPS
+                            </span>
+                        </div>
+
+                        <h3 class="text-lg font-bold text-white font-mono">
+                            CTF Challenge Solving &amp; Technical Write-Ups
+                        </h3>
+
+                        <p class="text-sm text-emerald-100/75 leading-relaxed">
+                            Breaking down Capture The Flag challenges across cryptography, steganography, packet analysis, and exploitation, then writing clear step-by-step documentation on GitHub.
+                        </p>
+
+                        <!-- Concrete Tasks Checklist -->
+                        <ul class="space-y-1.5 text-xs font-mono text-emerald-200/90 pt-1">
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#00f0ff]"></i> Step-by-Step Exploitation Walkthroughs</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#00f0ff]"></i> Wireshark PCAP Network Traffic Investigation</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#00f0ff]"></i> Cryptography, Hashing &amp; Cipher Decoding</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-[#00f0ff]"></i> Steganography &amp; Digital Forensics Challenges</li>
+                        </ul>
+                    </div>
+
+                    <div class="pt-3 border-t border-emerald-950/80 flex flex-wrap gap-1.5">
+                        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-[#050c08] text-[#00f0ff] border border-[#00f0ff]/25">CTF Write-Ups</span>
+                        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-[#050c08] text-[#00f0ff] border border-[#00f0ff]/25">Wireshark</span>
+                        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-[#050c08] text-[#00f0ff] border border-[#00f0ff]/25">Cryptography</span>
+                        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-[#050c08] text-[#00f0ff] border border-[#00f0ff]/25">Steganography</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 3. GTSTV2 CERTIFICATION DETAILS (TEXT ONLY, NO IMAGE) -->
+        <section id="certification" class="space-y-6 scroll-mt-20">
+            <div class="border-b border-[#00ff41]/20 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+                <div>
+                    <span class="font-mono text-xs text-[#00ff41] uppercase tracking-widest">02 // VERIFIED_CREDENTIAL</span>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white font-mono mt-1">Geez Tech Security Tester V2 (GTSTV2)</h2>
+                </div>
+                <div class="flex items-center gap-2 font-mono text-xs">
+                    <span class="px-2.5 py-1 rounded bg-[#00ff41]/15 text-[#00ff41] border border-[#00ff41]/40">ID: GTSTV2R14AA1194</span>
+                </div>
+            </div>
+
+            <!-- Simple Text Verification Card -->
+            <div class="terminal-card rounded-2xl p-6 sm:p-7 border border-[#00ff41]/40 space-y-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-950/90 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-[#00ff41]/10 border border-[#00ff41]/30 flex items-center justify-center text-[#00ff41]">
+                            <i class="fa-solid fa-shield-check text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white font-mono">Certified Security Tester — Passed with Distinction</h3>
+                            <p class="text-xs font-mono text-[#00f0ff]">Issued by Geez Tech Security (Nathan Hailu, CEO &amp; Instructor)</p>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#00ff41]/10 border border-[#00ff41]/30 text-[#00ff41] font-mono text-xs w-fit">
+                        <i class="fa-solid fa-circle-check"></i> Verified Credential
+                    </span>
+                </div>
+
+                <p class="text-sm text-emerald-100/80 leading-relaxed">
+                    Successfully completed the Geez Tech Security Testers Training, having met all rigorous requirements, completed every practical assignment and evaluation, and passed the final exam with distinction.
+                </p>
+
+                <!-- Quick Certificate Metadata Bar -->
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 font-mono text-xs">
+                    <div class="bg-[#050a07] border border-emerald-900/80 rounded-xl p-3">
+                        <div class="text-[10px] text-emerald-500 uppercase">RECIPIENT</div>
+                        <div class="text-white font-bold mt-0.5">Yabsira Dawit</div>
+                    </div>
+                    <div class="bg-[#050a07] border border-emerald-900/80 rounded-xl p-3">
+                        <div class="text-[10px] text-emerald-500 uppercase">CREDENTIAL ID</div>
+                        <div class="text-[#00ff41] font-bold mt-0.5 flex items-center justify-between">
+                            <span>GTSTV2R14AA1194</span>
+                            <button onclick="copyText('GTSTV2R14AA1194', 'Certificate ID copied!')" class="text-emerald-400 hover:text-white" title="Copy ID">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-[#050a07] border border-emerald-900/80 rounded-xl p-3">
+                        <div class="text-[10px] text-emerald-500 uppercase">ISSUED BY</div>
+                        <div class="text-white font-semibold mt-0.5">Geez Tech Security</div>
+                    </div>
+                    <div class="bg-[#050a07] border border-emerald-900/80 rounded-xl p-3">
+                        <div class="text-[10px] text-emerald-500 uppercase">DATE &amp; STATUS</div>
+                        <div class="text-[#00f0ff] font-semibold mt-0.5">Oct/05/2026 &bull; Distinction</div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 4. PROJECTS: PORT-SCANNER, CTF WRITE-UPS & YE-BUNA STORE -->
+        <section id="work" class="space-y-6 scroll-mt-20">
+            <div class="border-b border-[#00ff41]/20 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+                <div>
+                    <span class="font-mono text-xs text-[#00ff41] uppercase tracking-widest">03 // GITHUB_TOOLS_&_STORE</span>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white font-mono mt-1">Security Tools, CTF Write-Ups &amp; Store</h2>
+                </div>
+                <p class="text-xs font-mono text-emerald-400">Open-source repositories &amp; digital resources</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Card 1: Port Scanner Repository (NEW) -->
+                <div class="terminal-card rounded-2xl p-6 flex flex-col justify-between space-y-5 border border-[#00ff41]/35">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-1 rounded bg-[#00ff41]/15 text-[#00ff41] font-mono text-xs border border-[#00ff41]/30">
+                                <i class="fa-solid fa-terminal mr-1"></i> Public Tool Repo
+                            </span>
+                            <i class="fa-brands fa-github text-xl text-white"></i>
+                        </div>
+
+                        <div>
+                            <h3 class="text-lg font-bold text-white font-mono">
+                                yabudave2-star/port-scanner
+                            </h3>
+                            <p class="text-xs text-[#00f0ff] font-mono mt-0.5">Python &amp; Bash Network Recon Suite</p>
+                        </div>
+
+                        <p class="text-xs sm:text-sm text-emerald-100/75 leading-relaxed">
+                            Custom network scanning toolkit built for practical host discovery and port enumeration—featuring both Nmap-powered and dependency-free raw socket scanners.
+                        </p>
+
+                        <!-- Repo File Tree from Screenshot -->
+                        <div class="bg-[#040805] border border-emerald-900/90 rounded-xl p-3 font-mono text-[11px] space-y-1.5 text-emerald-200">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[#00ff41]"><i class="fa-regular fa-file-code mr-1.5"></i>host_discovery.py</span>
+                                <span class="text-emerald-500/80">host discovery</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[#00ff41]"><i class="fa-regular fa-file-code mr-1.5"></i>port_scanner.py</span>
+                                <span class="text-emerald-500/80">nmap module</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[#00ff41]"><i class="fa-regular fa-file-code mr-1.5"></i>port_scanner_no_nmap.py</span>
+                                <span class="text-emerald-500/80">pure sockets</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[#00f0ff]"><i class="fa-solid fa-scroll mr-1.5"></i>scanner.sh</span>
+                                <span class="text-emerald-500/80">bash NSE tool</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 flex items-center gap-2 font-mono">
+                        <a href="https://github.com/yabudave2-star/port-scanner" target="_blank" rel="noopener noreferrer"
+                           class="w-full bg-[#00ff41] hover:bg-[#22ff5b] text-[#040a06] font-bold py-2.5 px-3 rounded-xl text-center text-xs transition-all flex items-center justify-center gap-2">
+                            <i class="fa-brands fa-github"></i>
+                            <span>Open port-scanner</span>
+                        </a>
+                        <button onclick="copyText('git clone https://github.com/yabudave2-star/port-scanner.git', 'port-scanner clone command copied!')"
+                                class="px-3 py-2.5 rounded-xl bg-[#0b1810] hover:bg-[#13291b] text-[#00ff41] border border-[#00ff41]/30 text-xs transition-colors"
+                                title="Copy git clone">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card 2: GitHub CTF Write-ups -->
+                <div class="terminal-card rounded-2xl p-6 flex flex-col justify-between space-y-5">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-1 rounded bg-[#00f0ff]/10 text-[#00f0ff] font-mono text-xs border border-[#00f0ff]/30">
+                                <i class="fa-solid fa-flag-checkered mr-1"></i> CTF Walkthroughs
+                            </span>
+                            <i class="fa-brands fa-github text-xl text-white"></i>
+                        </div>
+
+                        <div>
+                            <h3 class="text-lg font-bold text-white font-mono">
+                                yabudave2-star/CTF-write-up
+                            </h3>
+                            <p class="text-xs text-[#00ff41] font-mono mt-0.5">Step-by-Step Exploitation Logs</p>
+                        </div>
+
+                        <p class="text-xs sm:text-sm text-emerald-100/75 leading-relaxed">
+                            Public repository documenting my practical Capture The Flag (CTF) challenge write-ups, recon methodology, vulnerability exploitation steps, and flag captures.
+                        </p>
+
+                        <!-- Terminal Clone Snippet -->
+                        <div class="bg-[#040805] border border-emerald-900/90 rounded-xl p-3 font-mono text-[11px] text-emerald-300 space-y-1">
+                            <div class="text-emerald-500 uppercase text-[10px]">CLONE REPOSITORY:</div>
+                            <div class="truncate text-[#00f0ff]">
+                                git clone https://github.com/yabudave2-star/CTF-write-up.git
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 flex items-center gap-2 font-mono">
+                        <a href="https://github.com/yabudave2-star/CTF-write-up" target="_blank" rel="noopener noreferrer"
+                           class="w-full bg-[#00f0ff] hover:bg-[#33f3ff] text-[#040a06] font-bold py-2.5 px-3 rounded-xl text-center text-xs transition-all flex items-center justify-center gap-2">
+                            <i class="fa-brands fa-github"></i>
+                            <span>View CTF Write-Ups</span>
+                        </a>
+                        <button onclick="copyText('git clone https://github.com/yabudave2-star/CTF-write-up.git', 'CTF-write-up clone command copied!')"
+                                class="px-3 py-2.5 rounded-xl bg-[#0b1810] hover:bg-[#13291b] text-[#00f0ff] border border-[#00f0ff]/30 text-xs transition-colors"
+                                title="Copy git clone">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card 3: Ye-Buna Store & Digital Products -->
+                <div class="terminal-card rounded-2xl p-6 flex flex-col justify-between space-y-5">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-1 rounded bg-[#ffb000]/10 text-[#ffb000] font-mono text-xs border border-[#ffb000]/30">
+                                <i class="fa-solid fa-mug-hot mr-1"></i> Ye-Buna Store
+                            </span>
+                            <i class="fa-solid fa-cart-shopping text-xl text-[#ffb000]"></i>
+                        </div>
+
+                        <div>
+                            <h3 class="text-lg font-bold text-white font-mono">
+                                ye-buna.com/yabdave
+                            </h3>
+                            <p class="text-xs text-[#ffb000] font-mono mt-0.5">Digital Products &amp; Creator Support</p>
+                        </div>
+
+                        <p class="text-xs sm:text-sm text-emerald-100/75 leading-relaxed">
+                            Visit my official Ye-Buna storefront where I offer digital products and practical security resources, or support my open-source tools and research.
+                        </p>
+
+                        <!-- Store Link Box -->
+                        <div class="bg-[#040805] border border-emerald-900/90 rounded-xl p-3 font-mono text-[11px] text-emerald-300 space-y-1">
+                            <div class="text-emerald-500 uppercase text-[10px]">STOREFRONT URL:</div>
+                            <div class="truncate text-[#ffb000]">
+                                https://ye-buna.com/yabdave
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 flex items-center gap-2 font-mono">
+                        <a href="https://ye-buna.com/yabdave" target="_blank" rel="noopener noreferrer"
+                           class="w-full bg-[#ffb000] hover:bg-[#ffc133] text-[#040a06] font-bold py-2.5 px-3 rounded-xl text-center text-xs transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-bag-shopping"></i>
+                            <span>Visit Ye-Buna Store</span>
+                        </a>
+                        <button onclick="copyText('https://ye-buna.com/yabdave', 'Ye-Buna store URL copied!')"
+                                class="px-3 py-2.5 rounded-xl bg-[#0b1810] hover:bg-[#13291b] text-[#ffb000] border border-[#ffb000]/30 text-xs transition-colors"
+                                title="Copy Store Link">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 5. DIRECT COMMS / CONTACT CHANNELS -->
+        <section id="contact" class="space-y-6 scroll-mt-20">
+            <div class="border-b border-[#00ff41]/20 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+                <div>
+                    <span class="font-mono text-xs text-[#00ff41] uppercase tracking-widest">04 // DIRECT_COMMS</span>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white font-mono mt-1">Contact &amp; Social Links</h2>
+                </div>
+                <p class="text-xs font-mono text-emerald-400">Reach out for security testing tasks &amp; collaborations</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 font-mono">
+                
+                <!-- Telegram Card -->
+                <div class="terminal-card rounded-2xl p-4 flex flex-col justify-between space-y-4">
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between text-[#00f0ff]">
+                            <i class="fa-brands fa-telegram text-xl"></i>
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-[#00f0ff]/10 border border-[#00f0ff]/30">TELEGRAM</span>
+                        </div>
+                        <div class="text-[11px] text-emerald-400/80">Username</div>
+                        <div class="text-sm font-bold text-white">@suvolix</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 pt-1">
+                        <a href="https://t.me/suvolix" target="_blank" rel="noopener noreferrer"
+                           class="flex-1 bg-[#0b1810] hover:bg-[#00f0ff] hover:text-black text-[#00f0ff] text-xs py-2 px-2.5 rounded-lg text-center border border-[#00f0ff]/35 transition-colors font-semibold">
+                            Chat
+                        </a>
+                        <button onclick="copyText('@suvolix', 'Telegram @suvolix copied!')"
+                                class="bg-[#0b1810] hover:bg-[#142e1f] text-emerald-300 text-xs py-2 px-2.5 rounded-lg border border-emerald-800 transition-colors">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Instagram Card (NEW) -->
+                <div class="terminal-card rounded-2xl p-4 flex flex-col justify-between space-y-4">
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between text-pink-400">
+                            <i class="fa-brands fa-instagram text-xl"></i>
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-pink-500/10 border border-pink-500/30">INSTAGRAM</span>
+                        </div>
+                        <div class="text-[11px] text-emerald-400/80">IG Handle</div>
+                        <div class="text-sm font-bold text-white">@yabu_dave1</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 pt-1">
+                        <a href="https://instagram.com/yabu_dave1" target="_blank" rel="noopener noreferrer"
+                           class="flex-1 bg-[#0b1810] hover:bg-pink-400 hover:text-black text-pink-400 text-xs py-2 px-2.5 rounded-lg text-center border border-pink-500/35 transition-colors font-semibold">
+                            Follow
+                        </a>
+                        <button onclick="copyText('yabu_dave1', 'Instagram @yabu_dave1 copied!')"
+                                class="bg-[#0b1810] hover:bg-[#142e1f] text-emerald-300 text-xs py-2 px-2.5 rounded-lg border border-emerald-800 transition-colors">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Email Card -->
+                <div class="terminal-card rounded-2xl p-4 flex flex-col justify-between space-y-4">
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between text-[#00ff41]">
+                            <i class="fa-regular fa-envelope text-xl"></i>
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-[#00ff41]/10 border border-[#00ff41]/30">EMAIL</span>
+                        </div>
+                        <div class="text-[11px] text-emerald-400/80">Direct Mail</div>
+                        <div class="text-xs font-bold text-white break-all">yabudave2@gmail.com</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 pt-1">
+                        <a href="mailto:yabudave2@gmail.com"
+                           class="flex-1 bg-[#0b1810] hover:bg-[#00ff41] hover:text-black text-[#00ff41] text-xs py-2 px-2.5 rounded-lg text-center border border-[#00ff41]/35 transition-colors font-semibold">
+                            Email
+                        </a>
+                        <button onclick="copyText('yabudave2@gmail.com', 'Email yabudave2@gmail.com copied!')"
+                                class="bg-[#0b1810] hover:bg-[#142e1f] text-emerald-300 text-xs py-2 px-2.5 rounded-lg border border-emerald-800 transition-colors">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- GitHub Card -->
+                <div class="terminal-card rounded-2xl p-4 flex flex-col justify-between space-y-4">
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between text-white">
+                            <i class="fa-brands fa-github text-xl"></i>
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-white/10 border border-white/20">GITHUB</span>
+                        </div>
+                        <div class="text-[11px] text-emerald-400/80">Tools &amp; CTF</div>
+                        <div class="text-xs font-bold text-white truncate">yabudave2-star</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 pt-1">
+                        <a href="https://github.com/yabudave2-star" target="_blank" rel="noopener noreferrer"
+                           class="flex-1 bg-[#0b1810] hover:bg-white hover:text-black text-white text-xs py-2 px-2.5 rounded-lg text-center border border-white/30 transition-colors font-semibold">
+                            Repos
+                        </a>
+                        <button onclick="copyText('https://github.com/yabudave2-star', 'GitHub profile copied!')"
+                                class="bg-[#0b1810] hover:bg-[#142e1f] text-emerald-300 text-xs py-2 px-2.5 rounded-lg border border-emerald-800 transition-colors">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ye-Buna Store Card -->
+                <div class="terminal-card rounded-2xl p-4 flex flex-col justify-between space-y-4">
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between text-[#ffb000]">
+                            <i class="fa-solid fa-mug-hot text-xl"></i>
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-[#ffb000]/10 border border-[#ffb000]/30">YE-BUNA</span>
+                        </div>
+                        <div class="text-[11px] text-emerald-400/80">Storefront</div>
+                        <div class="text-xs font-bold text-white truncate">ye-buna.com/yabdave</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 pt-1">
+                        <a href="https://ye-buna.com/yabdave" target="_blank" rel="noopener noreferrer"
+                           class="flex-1 bg-[#0b1810] hover:bg-[#ffb000] hover:text-black text-[#ffb000] text-xs py-2 px-2.5 rounded-lg text-center border border-[#ffb000]/35 transition-colors font-semibold">
+                            Store
+                        </a>
+                        <button onclick="copyText('https://ye-buna.com/yabdave', 'Ye-Buna link copied!')"
+                                class="bg-[#0b1810] hover:bg-[#142e1f] text-emerald-300 text-xs py-2 px-2.5 rounded-lg border border-emerald-800 transition-colors">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-[#00ff41]/20 mt-12 py-8 bg-[#030604]/90 text-xs font-mono text-emerald-500/80">
+        <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <span class="text-[#00ff41]">&gt;_</span>
+                <span>Yabsira Dawit (@suvolix) &bull; Certified Security Tester (GTSTV2R14AA1194)</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-4 text-emerald-400">
+                <a href="https://github.com/yabudave2-star/port-scanner" target="_blank" rel="noopener noreferrer" class="hover:text-[#00ff41]">[Port-Scanner]</a>
+                <a href="https://github.com/yabudave2-star/CTF-write-up" target="_blank" rel="noopener noreferrer" class="hover:text-[#00ff41]">[CTF-Write-Ups]</a>
+                <a href="https://ye-buna.com/yabdave" target="_blank" rel="noopener noreferrer" class="hover:text-[#ffb000]">[Ye-Buna]</a>
+                <a href="https://t.me/suvolix" target="_blank" rel="noopener noreferrer" class="hover:text-[#00f0ff]">[Telegram]</a>
+                <a href="https://instagram.com/yabu_dave1" target="_blank" rel="noopener noreferrer" class="hover:text-pink-400">[IG: @yabu_dave1]</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive Scripts: Canvas Digital Rain and Clipboard -->
+    <script>
+        /* ==========================================================================
+           1. CLIPBOARD COPY & TOAST NOTIFICATION
+           ========================================================================== */
+        function copyText(text, message) {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try {
+                document.execCommand('copy');
+                showToast(message || 'Copied to clipboard!');
+            } catch (err) {
+                console.error('Copy failed', err);
+            }
+            document.body.removeChild(tempInput);
+        }
+
+        let toastTimeout;
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.textContent = msg;
+            toast.classList.remove('hidden', 'translate-y-2', 'opacity-0');
+            
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 2400);
+        }
+
+        /* ==========================================================================
+           2. REALISTIC HACKER MATRIX / HEX RAIN & CYBER NODES CANVAS
+           ========================================================================== */
+        const canvas = document.getElementById('hacker-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Modes: 1 = MED (Default), 2 = HIGH, 0 = PAUSED/LOW
+        let bgMode = 1;
+        let animationFrameId = null;
+
+        const glyphs = '010101ABCDEF0123456789@#$%&*<>[]{}/\\|~^';
+        const fontSize = 14;
+        let columns = 0;
+        let drops = [];
+        let nodes = [];
+
+        function initCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            columns = Math.floor(canvas.width / fontSize);
+            drops = [];
+            for (let i = 0; i < columns; i++) {
+                drops[i] = Math.random() * -100;
+            }
+
+            // Initialize subtle floating cyber mesh nodes
+            const nodeCount = Math.min(28, Math.floor(canvas.width / 55));
+            nodes = [];
+            for (let i = 0; i < nodeCount; i++) {
+                nodes.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.45,
+                    vy: (Math.random() - 0.5) * 0.45
+                });
+            }
+        }
+
+        function drawHackerBackground() {
+            if (bgMode === 0) return;
+
+            // Translucent trail fade
+            ctx.fillStyle = 'rgba(5, 8, 6, 0.09)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Draw Matrix Hex/Binary Rain
+            ctx.font = fontSize + 'px "JetBrains Mono", monospace';
+            const step = bgMode === 2 ? 1 : 2; // High mode draws every column, Med draws every 2nd column
+
+            for (let i = 0; i < drops.length; i += step) {
+                const char = glyphs.charAt(Math.floor(Math.random() * glyphs.length));
+                // Mix neon green and cyber cyan characters
+                ctx.fillStyle = (i % 7 === 0) ? 'rgba(0, 240, 255, 0.65)' : 'rgba(0, 255, 65, 0.55)';
+                ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i] += (bgMode === 2 ? 0.65 : 0.42);
+            }
+
+            // 2. Draw Subtle Cyber Constellation Nodes
+            for (let i = 0; i < nodes.length; i++) {
+                const n = nodes[i];
+                n.x += n.vx;
+                n.y += n.vy;
+
+                if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
+                if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, 1.6, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 240, 255, 0.45)';
+                ctx.fill();
+
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const n2 = nodes[j];
+                    const dx = n.x - n2.x;
+                    const dy = n.y - n2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 140) {
+                        ctx.beginPath();
+                        ctx.moveTo(n.x, n.y);
+                        ctx.lineTo(n2.x, n2.y);
+                        ctx.strokeStyle = `rgba(0, 255, 65, ${(1 - dist / 140) * 0.14})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            animationFrameId = requestAnimationFrame(drawHackerBackground);
+        }
+
+        function cycleBgMode() {
+            bgMode = (bgMode + 1) % 3;
+            const label = document.getElementById('fx-label');
+            const icon = document.getElementById('fx-icon');
+
+            if (bgMode === 1) {
+                canvas.style.opacity = '0.45';
+                label.textContent = 'FX: MED';
+                icon.className = 'fa-solid fa-eye text-xs';
+                cancelAnimationFrame(animationFrameId);
+                drawHackerBackground();
+                showToast('Background FX: MEDIUM');
+            } else if (bgMode === 2) {
+                canvas.style.opacity = '0.75';
+                label.textContent = 'FX: HIGH';
+                icon.className = 'fa-solid fa-bolt text-xs';
+                cancelAnimationFrame(animationFrameId);
+                drawHackerBackground();
+                showToast('Background FX: OVERDRIVE');
+            } else {
+                canvas.style.opacity = '0.12';
+                label.textContent = 'FX: PAUSED';
+                icon.className = 'fa-solid fa-eye-slash text-xs';
+                cancelAnimationFrame(animationFrameId);
+                showToast('Background FX: PAUSED');
+            }
+        }
+
+        window.addEventListener('resize', initCanvas);
+
+        window.onload = function () {
+            initCanvas();
+            drawHackerBackground();
+        };
+    </script>
+</body>
+</html>
